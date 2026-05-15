@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Inscripciones</title>
+
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  background: #0f172a;
+  color: white;
+}
+
+header {
+  background: #1e293b;
+  padding: 15px;
+  text-align: center;
+  font-size: 22px;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 6px;
+  border: none;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: #38bdf8;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.user {
+  display: flex;
+  justify-content: space-between;
+  background: #0f172a;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+}
+
+.delete {
+  background: red;
+  color: white;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  🚀 Mi Página de Inscripciones
+</header>
+
+<div class="container">
+
+  <!-- FORMULARIO -->
+  <div class="card">
+    <h2>Registro</h2>
+
+    <form id="form">
+      <input name="nombre" placeholder="Nombre" required>
+      <input name="edad" placeholder="Edad" required>
+      <input name="telefono" placeholder="Teléfono" required>
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <!-- LISTA -->
+  <div class="card">
+    <h2>Registros</h2>
+    <div id="lista"></div>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// 🔥 AQUÍ VA TU CONFIG DE FIREBASE
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROYECTO.firebaseapp.com",
+  projectId: "TU_PROYECTO",
+  storageBucket: "TU_PROYECTO.appspot.com",
+  messagingSenderId: "XXXX",
+  appId: "XXXX"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const form = document.getElementById("form");
+const lista = document.getElementById("lista");
+
+// GUARDAR
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  await addDoc(collection(db, "registros"), {
+    nombre: form.nombre.value,
+    edad: form.edad.value,
+    telefono: form.telefono.value
+  });
+
+  form.reset();
+});
+
+// MOSTRAR
+onSnapshot(collection(db, "registros"), (snapshot) => {
+  lista.innerHTML = "";
+
+  snapshot.forEach((docItem) => {
+    const data = docItem.data();
+
+    lista.innerHTML += `
+      <div class="user">
+        <div>
+          👤 ${data.nombre}<br>
+          🎂 ${data.edad} | 📞 ${data.telefono}
+        </div>
+        <button class="delete" onclick="eliminar('${docItem.id}')">X</button>
+      </div>
+    `;
+  });
+});
+
+// ELIMINAR
+window.eliminar = async (id) => {
+  await deleteDoc(doc(db, "registros", id));
+};
+</script>
+
+</body>
+</html>
